@@ -1,0 +1,204 @@
+     1                                  ;  Author name: Chandresh Chavda
+     2                                  ;  Author email: chav349@csu.fullerton.edu
+     3                                  ;  CWID: 885158899
+     4                                  ;  Class: 240-11 Section 11
+     5                                  ;  Date: March 11, 2025
+     6                                  
+     7                                  ;declarations
+     8                                  
+     9                                  extern printf
+    10                                  extern scanf
+    11                                  extern atof
+    12                                  global electricity
+    13                                  extern current
+    14                                  extern isfloat
+    15                                  
+    16                                  string_size equ 48
+    17                                  
+    18                                  segment .data
+    19                                  ;declare initialized arrays
+    20                                  
+    21 00000000 257300                  floatform db "%s", 0
+    22 00000003 506C6561736520656E-     eforce db "Please enter the electric force in circuits (volts): ", 0
+    22 0000000C 746572207468652065-
+    22 00000015 6C6563747269632066-
+    22 0000001E 6F72636520696E2063-
+    22 00000027 697263756974732028-
+    22 00000030 766F6C7473293A2000 
+    23 00000039 506C6561736520656E-     res_1 db "Please enter the resistance in circuit number 1 (ohms): ", 0
+    23 00000042 746572207468652072-
+    23 0000004B 6573697374616E6365-
+    23 00000054 20696E206369726375-
+    23 0000005D 6974206E756D626572-
+    23 00000066 203120286F686D7329-
+    23 0000006F 3A2000             
+    24 00000072 506C6561736520656E-     res_2 db "Please enter the resistance in circuit number 2 (ohms): ", 0
+    24 0000007B 746572207468652072-
+    24 00000084 6573697374616E6365-
+    24 0000008D 20696E206369726375-
+    24 00000096 6974206E756D626572-
+    24 0000009F 203220286F686D7329-
+    24 000000A8 3A2000             
+    25 000000AB 506C6561736520656E-     res_3 db "Please enter the resistance in circuit number 3 (ohms): ", 0
+    25 000000B4 746572207468652072-
+    25 000000BD 6573697374616E6365-
+    25 000000C6 20696E206369726375-
+    25 000000CF 6974206E756D626572-
+    25 000000D8 203320286F686D7329-
+    25 000000E1 3A2000             
+    26 000000E4 5468616E6B20796F75-     thanks db "Thank you.", 10, 0
+    26 000000ED 2E0A00             
+    27 000000F0 496E76616C69642069-     badinput db "Invalid input. Try again: ", 0
+    27 000000F9 6E7075742E20547279-
+    27 00000102 20616761696E3A2000 
+    28                                  
+    29                                  segment .bss
+    30                                  ;declare empty arrays
+    31                                  
+    32                                  align 64
+    33 00000000 <res 00000340>          backup_storage_area resb 832
+    34                                  
+    35                                  segment .text
+    36                                  electricity:
+    37                                  
+    38                                  ;Backup all registers
+    39                                  push_all:
+    40 00000000 55                      push rbp
+    41 00000001 4889E5                  mov rbp, rsp
+    42 00000004 53                      push rbx
+    43 00000005 51                      push rcx
+    44 00000006 52                      push rdx
+    45 00000007 57                      push rdi
+    46 00000008 56                      push rsi
+    47 00000009 4150                    push r8
+    48 0000000B 4151                    push r9
+    49 0000000D 4152                    push r10
+    50 0000000F 4153                    push r11
+    51 00000011 4154                    push r12
+    52 00000013 4155                    push r13
+    53 00000015 4156                    push r14
+    54 00000017 4157                    push r15
+    55 00000019 9C                      pushf
+    56                                  
+    57 0000001A B807000000              mov rax,7
+    58 0000001F BA00000000              mov rdx,0
+    59 00000024 0FAE2425[00000000]      xsave [backup_storage_area]
+    60                                  
+    61                                  ;Input for Electric Force
+    62 0000002C E885000000              call input_electric_force
+    63 00000031 EB00                    jmp input_loop_r1
+    64                                  
+    65                                  ;Input for Resistance 1
+    66                                  input_loop_r1:
+    67 00000033 E89D000000              call input_resistance1
+    68 00000038 EB00                    jmp input_loop_r2
+    69                                  
+    70                                  ;Input for Resistance 2
+    71                                  input_loop_r2:
+    72 0000003A E8B5000000              call input_resistance2
+    73 0000003F EB00                    jmp input_loop_r3
+    74                                  
+    75                                  ;Input for Resistance 3
+    76                                  input_loop_r3:
+    77 00000041 E8CD000000              call input_resistance3
+    78 00000046 EB00                    jmp calc
+    79                                  
+    80                                  ;Calculation and Printing
+    81                                  calc:
+    82 00000048 B800000000              mov rax, 0
+    83 0000004D 48BF-                   mov rdi, thanks
+    83 0000004F [E400000000000000] 
+    84 00000057 E8(00000000)            call printf
+    85                                  
+    86 0000005C B803000000              mov rax, 3
+    87 00000061 F2410F10C6              movsd xmm0, xmm14
+    88 00000066 F2410F10CD              movsd xmm1, xmm13
+    89 0000006B F2410F10D7              movsd xmm2, xmm15
+    90 00000070 F2410F10DC              movsd xmm3, xmm12
+    91 00000075 E8(00000000)            call current
+    92                                  
+    93 0000007A B800000000              mov rax, 0
+    94 0000007F 6A00                    push qword 0
+    95 00000081 F20F110424              movsd [rsp], xmm0
+    96                                  
+    97 00000086 B807000000              mov rax,7
+    98 0000008B BA00000000              mov rdx,0
+    99 00000090 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   100                                  
+   101 00000098 F20F100424              movsd xmm0, [rsp]
+   102 0000009D 58                      pop rax
+   103                                  
+   104 0000009E 9D                      popf
+   105 0000009F 415F                    pop r15
+   106 000000A1 415E                    pop r14
+   107 000000A3 415D                    pop r13
+   108 000000A5 415C                    pop r12
+   109 000000A7 415B                    pop r11
+   110 000000A9 415A                    pop r10
+   111 000000AB 4159                    pop r9
+   112 000000AD 4158                    pop r8
+   113 000000AF 5E                      pop rsi
+   114 000000B0 5F                      pop rdi
+   115 000000B1 5A                      pop rdx
+   116 000000B2 59                      pop rcx
+   117 000000B3 5B                      pop rbx
+   118 000000B4 5D                      pop rbp
+   119 000000B5 C3                      ret
+   120                                  
+   121                                  ;================================ Subroutines ===============================
+   122                                  input_electric_force:
+   123 000000B6 B800000000              mov rax, 0
+   124 000000BB 48BF-                   mov rdi, eforce
+   124 000000BD [0300000000000000] 
+   125 000000C5 E8(00000000)            call printf
+   126 000000CA E863000000              call get_valid_float
+   127 000000CF F2440F10F8              movsd xmm15, xmm0
+   128 000000D4 C3                      ret
+   129                                  
+   130                                  input_resistance1:
+   131 000000D5 B800000000              mov rax, 0
+   132 000000DA 48BF-                   mov rdi, res_1
+   132 000000DC [3900000000000000] 
+   133 000000E4 E8(00000000)            call printf
+   134 000000E9 E844000000              call get_valid_float
+   135 000000EE F2440F10F0              movsd xmm14, xmm0
+   136 000000F3 C3                      ret
+   137                                  
+   138                                  input_resistance2:
+   139 000000F4 B800000000              mov rax, 0
+   140 000000F9 48BF-                   mov rdi, res_2
+   140 000000FB [7200000000000000] 
+   141 00000103 E8(00000000)            call printf
+   142 00000108 E825000000              call get_valid_float
+   143 0000010D F2440F10E8              movsd xmm13, xmm0
+   144 00000112 C3                      ret
+   145                                  
+   146                                  input_resistance3:
+   147 00000113 B800000000              mov rax, 0
+   148 00000118 48BF-                   mov rdi, res_3
+   148 0000011A [AB00000000000000] 
+   149 00000122 E8(00000000)            call printf
+   150 00000127 E806000000              call get_valid_float
+   151 0000012C F2440F10E0              movsd xmm12, xmm0
+   152 00000131 C3                      ret
+   153                                  
+   154                                  get_valid_float:
+   155 00000132 6A00                    push qword 0
+   156 00000134 6A00                    push qword 0
+   157 00000136 B800000000              mov rax, 0
+   158 0000013B 48BF-                   mov rdi, floatform
+   158 0000013D [0000000000000000] 
+   159 00000145 4889E6                  mov rsi, rsp
+   160 00000148 E8(00000000)            call scanf
+   161                                  
+   162 0000014D 4889E7                  mov rdi, rsp
+   163 00000150 E8(00000000)            call isfloat
+   164 00000155 4883F800                cmp rax, 0
+   165 00000159 74D7                    je get_valid_float
+   166                                  
+   167 0000015B B800000000              mov rax, 0
+   168 00000160 4889E7                  mov rdi, rsp
+   169 00000163 E8(00000000)            call atof
+   170 00000168 4159                    pop r9
+   171 0000016A 4159                    pop r9
+   172 0000016C C3                      ret
